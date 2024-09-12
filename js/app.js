@@ -158,6 +158,11 @@
     );
   };
 
+  const currency = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+
   const Calculations = () => {
     const amountFeeAppliesTo = van.derive(
       () => qcCeiling.val + contractFinance.val,
@@ -166,10 +171,17 @@
       () => programs.find((p) => p.id === selectedProgram.val).fee,
     );
 
+    const displayAmountFeeAppliesTo = van.derive(() =>
+      currency.format(amountFeeAppliesTo.val),
+    );
     const displayFee = van.derive(() => fee.val * 100);
     const additionalCharge = van.derive(() => amountFeeAppliesTo.val * fee.val);
+    const displayAdditionalCharge = van.derive(() =>
+      currency.format(additionalCharge.val),
+    );
 
     const newCeiling = van.derive(() => qcCeiling.val + additionalCharge.val);
+    const displayNewCeiling = van.derive(() => currency.format(newCeiling.val));
 
     return div(
       h2({ class: "text-lg font-bold mb-2 text-slate-500" }, "Outcome:"),
@@ -179,7 +191,7 @@
           { class: "text-sm text-slate-500 font-bold uppercase mb-2" },
           "Amount to apply fee to:",
           br(),
-          span({ class: "text-3xl text-slate-900" }, amountFeeAppliesTo),
+          span({ class: "text-3xl text-slate-900" }, displayAmountFeeAppliesTo),
         ),
         div(
           { class: "text-sm text-slate-500 font-bold uppercase mb-2" },
@@ -191,13 +203,13 @@
       div(
         { class: "text-sm text-slate-300 font-bold uppercase mb-4" },
         "Additional Charge: ",
-        span(additionalCharge),
+        span(displayAdditionalCharge),
       ),
       div(
         { class: "text-sm font-bold uppercase mb-2 text-orange-500" },
         "The new QC ceiling is",
         br(),
-        span({ class: "text-3xl" }, newCeiling),
+        span({ class: "text-3xl" }, displayNewCeiling),
       ),
     );
   };
