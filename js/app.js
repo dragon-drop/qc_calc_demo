@@ -1,6 +1,7 @@
 (function (window) {
   "use strict";
-  const { div, form, h1, h2, input, label, p, section } = van.tags;
+  const { br, div, form, header, hr, h1, h2, input, label, p, section, span } =
+    van.tags;
   let programs = [
     {
       id: 1,
@@ -73,6 +74,7 @@
       fee: 0.15,
     },
   ];
+
   const selectedProgram = van.state(1);
   const contractFinance = van.state(0);
   const contractCash = van.state(0);
@@ -81,9 +83,12 @@
   const selectProgram = (id) => (selectedProgram.val = parseInt(id));
 
   const Program = (program) => {
-    const isSelected = van.derive(() => selectProgram == program.id);
+    const isSelected = van.derive(() => selectedProgram.val === program.id);
     const id = `program_${program.id}`;
     return div(
+      {
+        class: `p-3 border-b border-b-2 border-orange-900 ${isSelected.val ? "text-white bg-orange-500" : ""}`,
+      },
       input({
         type: "radio",
         checked: isSelected.val,
@@ -95,33 +100,60 @@
     );
   };
 
+  const Dollar = (field) =>
+    div(
+      {
+        class: "border border-2 border-slate-300 text-xl rounded-md px-3 py-2",
+      },
+      span({ class: "mr-2 text-slate-400 font-bold text-base" }, "$"),
+      field,
+    );
+
   const Form = () => {
     return form(
       div(
-        label("Qc Ceiling"),
-        input({
-          type: "number",
-          step: 0.01,
-          onchange: (e) => {
-            qcCeiling.val = parseFloat(e.target.value);
-          },
-        }),
+        { class: "mb-2 w-full" },
+        label(
+          { class: "text-sm text-slate-500 font-bold uppercase mb-2" },
+          "Qc Ceiling",
+        ),
+        Dollar(
+          input({
+            type: "number",
+            step: 0.01,
+            onchange: (e) => {
+              qcCeiling.val = parseFloat(e.target.value);
+            },
+          }),
+        ),
       ),
       div(
-        label("Original Contract Cash"),
-        input({
-          type: "number",
-          step: 0.01,
-          onchange: (e) => (contractCash.val = parseFloat(e.target.value)),
-        }),
+        { class: "mb-2 w-full" },
+        label(
+          { class: "text-sm text-slate-500 font-bold uppercase mb-2" },
+          "Original Contract Cash",
+        ),
+        Dollar(
+          input({
+            type: "number",
+            step: 0.01,
+            onchange: (e) => (contractCash.val = parseFloat(e.target.value)),
+          }),
+        ),
       ),
       div(
-        label("Original Contract Finance"),
-        input({
-          type: "number",
-          step: 0.01,
-          onchange: (e) => (contractFinance.val = parseFloat(e.target.value)),
-        }),
+        { class: "mb-2 w-full" },
+        label(
+          { class: "text-sm text-slate-500 font-bold uppercase mb-2" },
+          "Original Contract Finance",
+        ),
+        Dollar(
+          input({
+            type: "number",
+            step: 0.01,
+            onchange: (e) => (contractFinance.val = parseFloat(e.target.value)),
+          }),
+        ),
       ),
     );
   };
@@ -138,22 +170,68 @@
     const additionalCharge = van.derive(() => amountFeeAppliesTo.val * fee.val);
 
     const newCeiling = van.derive(() => qcCeiling.val + additionalCharge.val);
+
     return div(
-      div("Amount to apply fee to:", amountFeeAppliesTo),
-      div("fee: ", displayFee, "%"),
-      div("additionalCharge", additionalCharge),
-      h1("The new QC ceiling is", newCeiling),
+      h2({ class: "text-lg font-bold mb-2 text-slate-500" }, "Outcome:"),
+      div(
+        { class: "flex gap-8 mb-2" },
+        div(
+          { class: "text-sm text-slate-500 font-bold uppercase mb-2" },
+          "Amount to apply fee to:",
+          br(),
+          span({ class: "text-3xl text-slate-900" }, amountFeeAppliesTo),
+        ),
+        div(
+          { class: "text-sm text-slate-500 font-bold uppercase mb-2" },
+          "Fee: ",
+          br(),
+          span({ class: "text-3xl text-slate-900" }, displayFee, "%"),
+        ),
+      ),
+      div(
+        { class: "text-sm text-slate-300 font-bold uppercase mb-4" },
+        "Additional Charge: ",
+        span(additionalCharge),
+      ),
+      div(
+        { class: "text-sm font-bold uppercase mb-2 text-orange-500" },
+        "The new QC ceiling is",
+        br(),
+        span({ class: "text-3xl" }, newCeiling),
+      ),
     );
   };
 
-  const QcCalculator = () => {
-    return section(
-      h1("QC Calculator"),
-      h2("Programs:"),
+  const Programs = () =>
+    div(
+      {
+        class:
+          "mb-4 border border-2 border-orange-900 rounded-md bg-orange-100 bg-clip-padding",
+      },
       programs.map(Program),
-      Form,
-      Calculations,
     );
+
+  const QcCalculator = () => {
+    return [
+      header(
+        { class: "p-8 text-white" },
+        h1({ class: "text-2xl font-bold" }, "QC Calculator"),
+      ),
+      div(
+        { class: "container mx-auto px-4 py-4 pb-8 bg-white rounded-lg" },
+        section(
+          h2({ class: "text-2xl font-bold" }, "Select a program:"),
+          Programs,
+          h2(
+            { class: "text-lg font-bold mb-2 text-slate-500" },
+            "Enter project finance:",
+          ),
+          Form,
+          hr({ class: "my-6 border-2 border-orange-500" }),
+          Calculations,
+        ),
+      ),
+    ];
   };
 
   van.add(document.body, QcCalculator());
