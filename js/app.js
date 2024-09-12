@@ -87,7 +87,7 @@
     const id = `program_${program.id}`;
     return div(
       {
-        class: `p-3 border-b border-b-2 border-orange-900 ${isSelected.val ? "text-white bg-orange-500" : ""}`,
+        class: `space-x-2 p-3 border-b border-b-2 border-orange-900 ${isSelected.val ? "text-white bg-orange-500" : ""}`,
       },
       input({
         type: "radio",
